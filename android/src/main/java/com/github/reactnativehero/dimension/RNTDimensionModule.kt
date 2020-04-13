@@ -24,18 +24,18 @@ class RNTDimensionModule(private val reactContext: ReactApplicationContext) : Re
 
         val constants: MutableMap<String, Any> = HashMap()
 
-        constants["DIMENSION_STATUS_BAR_HEIGHT"] = getStatusBarHeight()
-        constants["DIMENSION_NAVIGATION_BAR_HEIGHT"] = getNavigationBarHeight()
+        constants["STATUS_BAR_HEIGHT"] = getStatusBarHeight()
+        constants["NAVIGATION_BAR_HEIGHT"] = getNavigationBarHeight()
 
         val screenSize = getScreenSizeMap()
-        constants["DIMENSION_SCREEN_WIDTH"] = screenSize.getInt("width")
-        constants["DIMENSION_SCREEN_HEIGHT"] = screenSize.getInt("height")
+        constants["SCREEN_WIDTH"] = screenSize.getInt("width")
+        constants["SCREEN_HEIGHT"] = screenSize.getInt("height")
 
         val safeArea = getSafeAreaMap()
-        constants["DIMENSION_SAFE_AREA_TOP"] = safeArea.getInt("top")
-        constants["DIMENSION_SAFE_AREA_RIGHT"] = safeArea.getInt("right")
-        constants["DIMENSION_SAFE_AREA_BOTTOM"] = safeArea.getInt("bottom")
-        constants["DIMENSION_SAFE_AREA_LEFT"] = safeArea.getInt("left")
+        constants["SAFE_AREA_TOP"] = safeArea.getInt("top")
+        constants["SAFE_AREA_RIGHT"] = safeArea.getInt("right")
+        constants["SAFE_AREA_BOTTOM"] = safeArea.getInt("bottom")
+        constants["SAFE_AREA_LEFT"] = safeArea.getInt("left")
 
         return constants
 
@@ -130,7 +130,7 @@ class RNTDimensionModule(private val reactContext: ReactApplicationContext) : Re
 
         // P 之前的版本都是厂商私有实现，懒得折腾了
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            currentActivity?.window.decorView.rootWindowInsets?.displayCutout?.let {
+            currentActivity?.window?.decorView?.rootWindowInsets?.displayCutout?.let {
                 map.putInt("top", (it.safeInsetTop / density).toInt())
                 map.putInt("right", (it.safeInsetRight / density).toInt())
                 map.putInt("bottom", (it.safeInsetBottom / density).toInt())
@@ -158,11 +158,10 @@ class RNTDimensionModule(private val reactContext: ReactApplicationContext) : Re
         val display = (reactContext.getSystemService(WINDOW_SERVICE) as WindowManager).defaultDisplay
         val size = Point()
 
-        // Android 4.2
-        if (Build.VERSION.SDK_INT >= 17) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
             display.getRealSize(size)
         }
-        else if (Build.VERSION.SDK_INT >= 14) {
+        else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
             try {
                 size.x = Display::class.java.getMethod("getRawWidth").invoke(display) as Int
                 size.y = Display::class.java.getMethod("getRawHeight").invoke(display) as Int

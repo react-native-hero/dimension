@@ -1,14 +1,16 @@
 #import "RNTDimension.h"
 
-CGFloat getStatusBarHeight() {
+@implementation RNTDimension
+
+static CGFloat getStatusBarHeight() {
     return UIApplication.sharedApplication.statusBarFrame.size.height;
 }
 
-CGFloat getNavigationBarHeight() {
+static CGFloat getNavigationBarHeight() {
     return 0;
 }
 
-NSDictionary* getScreenSize() {
+static NSDictionary* getScreenSize() {
 
     CGRect bounds = UIScreen.mainScreen.bounds;
 
@@ -19,7 +21,7 @@ NSDictionary* getScreenSize() {
 
 }
 
-NSDictionary* getSafeArea() {
+static NSDictionary* getSafeArea() {
 
     if (@available(iOS 11.0, *)) {
         UIWindow* window = [[UIApplication sharedApplication] keyWindow];
@@ -41,8 +43,6 @@ NSDictionary* getSafeArea() {
 
 }
 
-@implementation RNTDimension
-
 + (BOOL)requiresMainQueueSetup {
     return YES;
 }
@@ -55,14 +55,14 @@ NSDictionary* getSafeArea() {
     NSDictionary *screenSize = getScreenSize();
     NSDictionary *safeArea = getSafeArea();
     return @{
-        @"DIMENSION_STATUS_BAR_HEIGHT": @(getStatusBarHeight()),
-        @"DIMENSION_NAVIGATION_BAR_HEIGHT": @(getNavigationBarHeight()),
-        @"DIMENSION_SCREEN_WIDTH": screenSize[@"width"],
-        @"DIMENSION_SCREEN_HEIGHT": screenSize[@"height"],
-        @"DIMENSION_SAFE_AREA_TOP": safeArea[@"top"],
-        @"DIMENSION_SAFE_AREA_RIGHT": safeArea[@"right"],
-        @"DIMENSION_SAFE_AREA_BOTTOM": safeArea[@"bottom"],
-        @"DIMENSION_SAFE_AREA_LEFT": safeArea[@"left"],
+        @"STATUS_BAR_HEIGHT": @(getStatusBarHeight()),
+        @"NAVIGATION_BAR_HEIGHT": @(getNavigationBarHeight()),
+        @"SCREEN_WIDTH": screenSize[@"width"],
+        @"SCREEN_HEIGHT": screenSize[@"height"],
+        @"SAFE_AREA_TOP": safeArea[@"top"],
+        @"SAFE_AREA_RIGHT": safeArea[@"right"],
+        @"SAFE_AREA_BOTTOM": safeArea[@"bottom"],
+        @"SAFE_AREA_LEFT": safeArea[@"left"],
      };
 }
 
