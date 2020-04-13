@@ -55,14 +55,14 @@ NSDictionary* getSafeArea() {
     NSDictionary *screenSize = getScreenSize();
     NSDictionary *safeArea = getSafeArea();
     return @{
-        @"STATUS_BAR_HEIGHT": @(getStatusBarHeight()),
-        @"NAVIGATION_BAR_HEIGHT": @(getNavigationBarHeight()),
-        @"SCREEN_WIDTH": screenSize[@"width"],
-        @"SCREEN_HEIGHT": screenSize[@"height"],
-        @"SAFE_AREA_TOP": safeArea[@"top"],
-        @"SAFE_AREA_RIGHT": safeArea[@"right"],
-        @"SAFE_AREA_BOTTOM": safeArea[@"bottom"],
-        @"SAFE_AREA_LEFT": safeArea[@"left"],
+        @"DIMENSION_STATUS_BAR_HEIGHT": @(getStatusBarHeight()),
+        @"DIMENSION_NAVIGATION_BAR_HEIGHT": @(getNavigationBarHeight()),
+        @"DIMENSION_SCREEN_WIDTH": screenSize[@"width"],
+        @"DIMENSION_SCREEN_HEIGHT": screenSize[@"height"],
+        @"DIMENSION_SAFE_AREA_TOP": safeArea[@"top"],
+        @"DIMENSION_SAFE_AREA_RIGHT": safeArea[@"right"],
+        @"DIMENSION_SAFE_AREA_BOTTOM": safeArea[@"bottom"],
+        @"DIMENSION_SAFE_AREA_LEFT": safeArea[@"left"],
      };
 }
 

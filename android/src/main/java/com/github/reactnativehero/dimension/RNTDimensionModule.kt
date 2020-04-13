@@ -24,18 +24,18 @@ class RNTDimensionModule(private val reactContext: ReactApplicationContext) : Re
 
         val constants: MutableMap<String, Any> = HashMap()
 
-        constants["STATUS_BAR_HEIGHT"] = getStatusBarHeight()
-        constants["NAVIGATION_BAR_HEIGHT"] = getNavigationBarHeight()
+        constants["DIMENSION_STATUS_BAR_HEIGHT"] = getStatusBarHeight()
+        constants["DIMENSION_NAVIGATION_BAR_HEIGHT"] = getNavigationBarHeight()
 
         val screenSize = getScreenSizeMap()
-        constants["SCREEN_WIDTH"] = screenSize.getInt("width")
-        constants["SCREEN_HEIGHT"] = screenSize.getInt("height")
+        constants["DIMENSION_SCREEN_WIDTH"] = screenSize.getInt("width")
+        constants["DIMENSION_SCREEN_HEIGHT"] = screenSize.getInt("height")
 
         val safeArea = getSafeAreaMap()
-        constants["SAFE_AREA_TOP"] = safeArea.getInt("top")
-        constants["SAFE_AREA_RIGHT"] = safeArea.getInt("right")
-        constants["SAFE_AREA_BOTTOM"] = safeArea.getInt("bottom")
-        constants["SAFE_AREA_LEFT"] = safeArea.getInt("left")
+        constants["DIMENSION_SAFE_AREA_TOP"] = safeArea.getInt("top")
+        constants["DIMENSION_SAFE_AREA_RIGHT"] = safeArea.getInt("right")
+        constants["DIMENSION_SAFE_AREA_BOTTOM"] = safeArea.getInt("bottom")
+        constants["DIMENSION_SAFE_AREA_LEFT"] = safeArea.getInt("left")
 
         return constants
 
