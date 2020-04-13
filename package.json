@@ -1,0 +1,24 @@
+{
+  "name": "@react-native-hero/dimension",
+  "version": "0.0.1",
+  "description": "react native dimension",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/react-native-hero/dimension.git"
+  },
+  "keywords": [
+    "react",
+    "native",
+    "dimension"
+  ],
+  "author": "musicode",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/react-native-hero/dimension/issues"
+  },
+  "homepage": "https://github.com/react-native-hero/dimension#readme"
+}
