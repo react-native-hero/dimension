@@ -1,14 +1,18 @@
 package com.github.reactnativehero.dimension
 
-import android.os.Build
-import android.view.Display
-import android.content.Context.WINDOW_SERVICE
+import android.app.Activity
 import android.graphics.Point
 import android.graphics.Rect
+import android.os.Build
+import android.os.Handler
+import android.os.Looper
+import android.util.Size
 import android.view.WindowManager
+import androidx.core.view.OnApplyWindowInsetsListener
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import com.facebook.react.bridge.*
-import java.lang.Exception
-import java.util.HashMap
+import com.facebook.react.modules.core.DeviceEventManagerModule
 
 class RNTDimensionModule(private val reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext) {
 
@@ -16,28 +20,122 @@ class RNTDimensionModule(private val reactContext: ReactApplicationContext) : Re
         reactApplicationContext.resources.displayMetrics.density
     }
 
+    private var statusBarHeight = 0
+    private var navigationBarHeight = 0
+
+    private var cutoutTop = 0
+    private var cutoutRight = 0
+    private var cutoutBottom = 0
+    private var cutoutLeft = 0
+
     override fun getName(): String {
         return "RNTDimension"
     }
 
-    override fun getConstants(): Map<String, Any>? {
+    override fun getConstants(): Map<String, Any> {
 
         val constants: MutableMap<String, Any> = HashMap()
 
-        constants["STATUS_BAR_HEIGHT"] = getStatusBarHeight()
-        constants["NAVIGATION_BAR_HEIGHT"] = getNavigationBarHeight()
+        constants["STATUS_BAR_HEIGHT"] = getStatusBarHeightData()
+        constants["NAVIGATION_BAR_HEIGHT"] = getNavigationBarHeightData()
 
-        val screenSize = getScreenSizeMap()
-        constants["SCREEN_WIDTH"] = screenSize.getInt("width")
-        constants["SCREEN_HEIGHT"] = screenSize.getInt("height")
+        val screenSize = getScreenSizeData()
+        constants["SCREEN_WIDTH"] = screenSize.width
+        constants["SCREEN_HEIGHT"] = screenSize.height
 
-        val safeArea = getSafeAreaMap()
-        constants["SAFE_AREA_TOP"] = safeArea.getInt("top")
-        constants["SAFE_AREA_RIGHT"] = safeArea.getInt("right")
-        constants["SAFE_AREA_BOTTOM"] = safeArea.getInt("bottom")
-        constants["SAFE_AREA_LEFT"] = safeArea.getInt("left")
+        val safeArea = getSafeAreaData()
+        constants["SAFE_AREA_TOP"] = safeArea.top
+        constants["SAFE_AREA_RIGHT"] = safeArea.right
+        constants["SAFE_AREA_BOTTOM"] = safeArea.bottom
+        constants["SAFE_AREA_LEFT"] = safeArea.left
 
         return constants
+
+    }
+
+    @ReactMethod
+    fun init(promise: Promise) {
+
+        lateinit var waitActivity: () -> Unit
+
+        val handler = fun (activity: Activity?) {
+            val listener = OnApplyWindowInsetsListener { _, insets ->
+
+                val systemBarInsets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+                val cutoutInsets = insets.getInsets(WindowInsetsCompat.Type.displayCutout())
+
+                var isChange = false
+
+                if (statusBarHeight != systemBarInsets.top) {
+                    statusBarHeight = systemBarInsets.top
+                    isChange = true
+                }
+                if (navigationBarHeight != systemBarInsets.bottom) {
+                    navigationBarHeight = systemBarInsets.bottom
+                    isChange = true
+                }
+                if (cutoutTop != cutoutInsets.top) {
+                    cutoutTop = cutoutInsets.top
+                    isChange = true
+                }
+                if (cutoutRight != cutoutInsets.right) {
+                    cutoutRight = cutoutInsets.right
+                    isChange = true
+                }
+                if (cutoutBottom != cutoutInsets.bottom) {
+                    cutoutBottom = cutoutInsets.bottom
+                    isChange = true
+                }
+                if (cutoutLeft != cutoutInsets.left) {
+                    cutoutLeft = cutoutInsets.left
+                    isChange = true
+                }
+
+                if (isChange) {
+                    val screenSizeData = getScreenSizeData()
+                    val screenSizeMap = Arguments.createMap()
+                    screenSizeMap.putInt("width", screenSizeData.width)
+                    screenSizeMap.putInt("height", screenSizeData.height)
+
+                    val safeAreaData = getSafeAreaData()
+                    val safeAreaMap = Arguments.createMap()
+                    safeAreaMap.putInt("top", safeAreaData.top)
+                    safeAreaMap.putInt("right", safeAreaData.right)
+                    safeAreaMap.putInt("bottom", safeAreaData.bottom)
+                    safeAreaMap.putInt("left", safeAreaData.left)
+
+                    val map = Arguments.createMap()
+                    map.putInt("statusBarHeight", getStatusBarHeightData())
+                    map.putInt("navigationBarHeight", getNavigationBarHeightData())
+                    map.putMap("screenSize", screenSizeMap)
+                    map.putMap("safeArea", safeAreaMap)
+
+                    sendEvent("change", map)
+                }
+
+                insets
+            }
+            if (activity != null) {
+                activity.runOnUiThread {
+                    val decorView = activity.window.decorView
+                    ViewCompat.setOnApplyWindowInsetsListener(decorView, listener)
+                    decorView.requestApplyInsets()
+
+                    val map = Arguments.createMap()
+                    promise.resolve(map)
+                }
+            } else {
+                waitActivity()
+            }
+        }
+
+        waitActivity = fun () {
+            Handler(Looper.getMainLooper()).postDelayed({
+                handler(currentActivity)
+            }, 200)
+        }
+
+        handler(currentActivity)
 
     }
 
@@ -45,23 +143,9 @@ class RNTDimensionModule(private val reactContext: ReactApplicationContext) : Re
     fun getStatusBarHeight(promise: Promise) {
 
         val map = Arguments.createMap()
-        map.putInt("height", getStatusBarHeight())
+        map.putInt("height", getStatusBarHeightData())
 
         promise.resolve(map)
-
-    }
-
-    private fun getStatusBarHeight(): Int {
-
-        val resources = reactApplicationContext.resources
-        val resId = resources.getIdentifier("status_bar_height", "dimen", "android")
-
-        return if (resId > 0) {
-            (resources.getDimensionPixelSize(resId) / density).toInt()
-        }
-        else {
-            0
-        }
 
     }
 
@@ -69,108 +153,81 @@ class RNTDimensionModule(private val reactContext: ReactApplicationContext) : Re
     fun getNavigationBarHeight(promise: Promise) {
 
         val map = Arguments.createMap()
-        map.putInt("height", getNavigationBarHeight())
+        map.putInt("height", getNavigationBarHeightData())
 
         promise.resolve(map)
-
-    }
-
-    private fun getNavigationBarHeight(): Int {
-
-        val window = currentActivity?.window ?: return 0
-
-        // getScreenSize() 方法在某些手机上返回的是内容区域的尺寸
-        // 导致这里返回的是 navigation bar + status bar 的高度
-        // 因此我们改变思路，获取内容区域的位置信息，这样就能求出真实的 navigation bar 的高度了
-
-        val realScreenSize = getRealScreenSize()
-
-        val rect = Rect()
-
-        window.decorView.getWindowVisibleDisplayFrame(rect)
-
-        return ((realScreenSize.y - rect.bottom) / density).toInt()
 
     }
 
     @ReactMethod
     fun getScreenSize(promise: Promise) {
 
-        promise.resolve(getScreenSizeMap())
-
-    }
-
-    private fun getScreenSizeMap(): WritableMap {
-
-        // 跟 ios 保持一致，获取的是物理屏尺寸
-        val screenSize = getRealScreenSize()
-
         val map = Arguments.createMap()
-        map.putInt("width", (screenSize.x / density).toInt())
-        map.putInt("height", (screenSize.y / density).toInt())
+        val data = getScreenSizeData()
 
-        return map
+        map.putInt("width", data.width)
+        map.putInt("height", data.height)
+
+        promise.resolve(map)
 
     }
 
     @ReactMethod
     fun getSafeArea(promise: Promise) {
 
-        promise.resolve(getSafeAreaMap())
-
-    }
-
-    private fun getSafeAreaMap(): WritableMap {
-
         val map = Arguments.createMap()
-        map.putInt("top", getStatusBarHeight())
-        map.putInt("right", 0)
-        map.putInt("bottom", 0)
-        map.putInt("left", 0)
+        val data = getSafeAreaData()
 
-        // P 之前的版本都是厂商私有实现，懒得折腾了
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            currentActivity?.window?.decorView?.rootWindowInsets?.displayCutout?.let {
-                map.putInt("top", (it.safeInsetTop / density).toInt())
-                map.putInt("right", (it.safeInsetRight / density).toInt())
-                map.putInt("bottom", (it.safeInsetBottom / density).toInt())
-                map.putInt("left", (it.safeInsetLeft / density).toInt())
-            }
-        }
+        map.putInt("top", data.top)
+        map.putInt("right", data.right)
+        map.putInt("bottom", data.bottom)
+        map.putInt("left", data.left)
 
-        return map
+        promise.resolve(map)
 
     }
 
-    private fun getScreenSize(): Point {
+    private fun getScreenSizeData(): Size {
+        // 跟 ios 保持一致，获取的是物理屏尺寸
+        var screenWidth = 0
+        var screenHeight = 0
 
-        val display = (reactContext.getSystemService(WINDOW_SERVICE) as WindowManager).defaultDisplay
-        val size = Point()
-
-        display.getSize(size)
-
-        return size
-
+        val windowManager = reactContext.getSystemService(WindowManager::class.java)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            // Android 11+
+            val windowMetrics = windowManager.currentWindowMetrics
+            screenWidth = windowMetrics.bounds.width()   // 屏幕总宽度（像素）
+            screenHeight = windowMetrics.bounds.height() // 屏幕总高度（像素）
+        } else {
+            // 旧版本兼容方案（Android 5.0~10）
+            val point = Point()
+            windowManager.defaultDisplay.getRealSize(point)
+            screenWidth = point.x
+            screenHeight = point.y
+        }
+        return Size(toReactUnit(screenWidth), toReactUnit(screenHeight))
     }
 
-    private fun getRealScreenSize(): Point {
+    private fun getStatusBarHeightData(): Int {
+        return toReactUnit(statusBarHeight)
+    }
 
-        val display = (reactContext.getSystemService(WINDOW_SERVICE) as WindowManager).defaultDisplay
-        val size = Point()
+    private fun getNavigationBarHeightData(): Int {
+        return toReactUnit(navigationBarHeight)
+    }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            display.getRealSize(size)
-        }
-        else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-            try {
-                size.x = Display::class.java.getMethod("getRawWidth").invoke(display) as Int
-                size.y = Display::class.java.getMethod("getRawHeight").invoke(display) as Int
-            } catch (e: Exception) {
-            }
-        }
+    private fun getSafeAreaData(): Rect {
+        return Rect(toReactUnit(cutoutLeft), toReactUnit(statusBarHeight), toReactUnit(cutoutRight), toReactUnit(cutoutBottom))
+    }
 
-        return size
+    private fun toReactUnit(value: Int): Int {
+        return (value / density).toInt()
+    }
 
+    private fun sendEvent(eventName: String, params: WritableMap) {
+        reactContext
+            .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
+            .emit(eventName, params)
     }
 
 }

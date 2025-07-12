@@ -40,6 +40,9 @@ $ react-native link @react-native-hero/dimension
 
 ```js
 import {
+  init,
+  addListener,
+
   statusBarHeight,
   navigationBarHeight,
   screenSize,
@@ -50,6 +53,9 @@ import {
   getScreenSize,
   getSafeArea,
 } from '@react-native-hero/dimension'
+
+// In your App.js, call init()
+init()
 
 // The getXxx methods is used to get the latest dimension info asynchronously.
 // If your app will not change the dimension info, you can just use the corresponding variables.
@@ -72,5 +78,13 @@ getSafeArea().then(data => {
   data.right
   data.bottom
   data.left
+})
+
+// You have to listen dimension change in android app.
+addListener('change', function (data) {
+  data.statusBarHeight
+  data.navigationBarHeight
+  data.screenSize
+  data.safeArea
 })
 ```

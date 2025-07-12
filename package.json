@@ -1,6 +1,6 @@
 {
   "name": "@react-native-hero/dimension",
-  "version": "0.0.3",
+  "version": "0.1.0",
   "description": "react native dimension",
   "main": "index.js",
   "scripts": {

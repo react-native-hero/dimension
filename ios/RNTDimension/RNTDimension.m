@@ -68,6 +68,10 @@ static NSDictionary* getSafeArea() {
 
 RCT_EXPORT_MODULE(RNTDimension);
 
+RCT_EXPORT_METHOD(init:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject) {
+    resolve(@{});
+}
+
 RCT_EXPORT_METHOD(getStatusBarHeight:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject) {
 
     resolve(@{
