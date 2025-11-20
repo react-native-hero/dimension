@@ -131,11 +131,11 @@ class RNTDimensionModule(private val reactContext: ReactApplicationContext) : Re
 
         waitActivity = fun () {
             Handler(Looper.getMainLooper()).postDelayed({
-                handler(currentActivity)
+                handler(reactContext.currentActivity)
             }, 200)
         }
 
-        handler(currentActivity)
+        handler(reactContext.currentActivity)
 
     }
 
